@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t surajkeshri/complex-client -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true surajkeshri/complex-client npm run test -- --watchAll=false
+
+after_success:
+  - docker build -t surajkeshri/complex-client ./client
+  - docker build -t surajkeshri/complex-nginx ./nginx
+  - docker build -t surajkeshri/complex-worker ./worker
+  - docker build -t surajkeshri/complex-server ./server
+  - echo "$DOCKER_P" | docker login -u "$DOCKER_U" --password-stdin
+  - docker push surajkeshri/complex-client
+  - docker push surajkeshri/complex-nginx
+  - docker push surajkeshri/complex-worker
+  - docker push surajkeshri/complex-server
